@@ -62,29 +62,8 @@ class ParseNintendoJSON extends Command
                   $discountPrice = $game['eshop_price'] - $salePrice;
                 }
               }
-
-              $nintendoGame = US_Game::updateOrCreate(
-                ['nsuid' => $game['nsuid']],
-                [
-                  'title' => $game['title'],
-                  'eshop_price' => $game['eshop_price'],
-                  'sale_price' => $salePrice,
-                  'percentDiscounted' => $discountPercent,
-                  'priceDiscounted' => $discountPrice,
-                  'front_box_art' => $game['front_box_art']
-                ]
-              );
-
-              $this->info('-------------------');
-              $this->info('Title: '.$nintendoGame->title);
-              $this->info('NSUID: '.$nintendoGame->nsuid);
-              $this->info('Price: $'.$nintendoGame->eshop_price);
-              $this->info('Sale Price: $'.$nintendoGame->sale_price);
-              $this->info('Percent Discounted: '.$nintendoGame->percentDiscounted.'%');
-              $this->info('Price Discounted: $'.sprintf("%0.2f",$nintendoGame->priceDiscounted));
-              $this->info('Box Art: '.$nintendoGame->front_box_art);
-              $this->info('-------------------');
-              $this->info(' ');
+              $nintendoGame = $this->insertOrUpdateGame($game,$salePrice,$discountPercent,$discountPrice);
+              $this->logGameToOutput($nintendoGame);
             }
           }
           $offset = $offset + 50;
@@ -93,5 +72,35 @@ class ParseNintendoJSON extends Command
           $this->info('Done parsing games into the database');
         }
       }
+    }
+
+    public function insertOrUpdateGame($game,$salePrice,$discountPercent,$discountPrice)
+    {
+      $nintendoGame = US_Game::updateOrCreate(
+        ['nsuid' => $game['nsuid']],
+        [
+          'title' => $game['title'],
+          'eshop_price' => $game['eshop_price'],
+          'sale_price' => $salePrice,
+          'percentDiscounted' => $discountPercent,
+          'priceDiscounted' => $discountPrice,
+          'front_box_art' => $game['front_box_art']
+        ]
+      );
+      return $nintendoGame;
+    }
+
+    public function logGameToOutput($nintendoGame)
+    {
+      $this->info('-------------------');
+      $this->info('Title: '.$nintendoGame->title);
+      $this->info('NSUID: '.$nintendoGame->nsuid);
+      $this->info('Price: $'.$nintendoGame->eshop_price);
+      $this->info('Sale Price: $'.$nintendoGame->sale_price);
+      $this->info('Percent Discounted: '.$nintendoGame->percentDiscounted.'%');
+      $this->info('Price Discounted: $'.sprintf("%0.2f",$nintendoGame->priceDiscounted));
+      $this->info('Box Art: '.$nintendoGame->front_box_art);
+      $this->info('-------------------');
+      $this->info(' ');
     }
 }
